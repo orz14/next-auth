@@ -1,23 +1,25 @@
-import { getCookie } from "@/lib/get-cookie";
-import axios from "axios";
-
-const HOST = process.env.NEXT_PUBLIC_API_URL;
+import axiosInstance from "@/lib/axios";
+import { getCookie } from "@/lib/cookie";
 
 const auth = {
-  login: (credentials) => axios.post(`${HOST}/auth/login`, credentials),
-  register: (credentials) => axios.post(`${HOST}/auth/register`, credentials),
+  login: (credentials) => axiosInstance.post("/auth/login", credentials),
+  register: (credentials) => axiosInstance.post("/auth/register", credentials),
   getUser: () =>
-    axios.get(`${HOST}/auth/me`, {
+    axiosInstance.get("/auth/me", {
       headers: {
         Authorization: `Bearer ${getCookie("token")}`,
       },
     }),
   logout: () =>
-    axios.post(`${HOST}/auth/logout`, null, {
-      headers: {
-        Authorization: `Bearer ${getCookie("token")}`,
-      },
-    }),
+    axiosInstance.post(
+      "/auth/logout",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${getCookie("token")}`,
+        },
+      }
+    ),
 };
 
 export default auth;

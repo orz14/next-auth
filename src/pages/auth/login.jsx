@@ -1,4 +1,3 @@
-import Layout from "@/components/layouts/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import auth from "@/configs/api/auth";
 import { Loader2 } from "lucide-react";
+import { setCookie } from "@/lib/cookie";
+import AuthLayout from "@/components/layouts/AuthLayout";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,7 +35,12 @@ export default function LoginPage() {
         .login(credentials)
         .then((res) => {
           if (res.status === 200) {
-            document.cookie = `token=${res.data.accessToken}; path=/; Secure; SameSite=Strict`;
+            setCookie("token", res.data.accessToken, {
+              path: "/",
+              secure: true,
+              sameSite: "Strict",
+            });
+
             router.push("/dashboard");
           }
         })
@@ -55,7 +61,7 @@ export default function LoginPage() {
     <>
       <Meta title="Login Page" />
 
-      <Layout>
+      <AuthLayout>
         {error && <div className="w-[500px] bg-background border border-zinc-900 rounded-lg p-4 text-sm text-red-700 text-center mb-2">{error}</div>}
 
         <Card className="w-[500px] bg-background border-zinc-900">
@@ -119,7 +125,7 @@ export default function LoginPage() {
             Register
           </Link>
         </div>
-      </Layout>
+      </AuthLayout>
     </>
   );
 }
