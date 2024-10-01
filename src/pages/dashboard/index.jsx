@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import auth from "@/configs/api/auth";
+import { deleteCookie } from "@/lib/cookie";
 import { getUser } from "@/lib/get-user";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/router";
@@ -21,7 +22,7 @@ export default function DashboardPage() {
       .logout()
       .then((res) => {
         if (res.status === 200) {
-          document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure;";
+          deleteCookie("token");
           router.push("/auth/login");
         }
       })

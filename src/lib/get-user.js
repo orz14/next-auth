@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { getCookie } from "./get-cookie";
+import { getCookie } from "./cookie";
 
 export const getUser = () => {
   try {

@@ -1,4 +1,3 @@
-import Layout from "@/components/layouts/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +10,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import auth from "@/configs/api/auth";
 import { Loader2 } from "lucide-react";
+import AuthLayout from "@/components/layouts/AuthLayout";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function RegisterPage() {
     <>
       <Meta title="Register Page" />
 
-      <Layout>
+      <AuthLayout>
         {error && <div className="w-[500px] bg-background border border-zinc-900 rounded-lg p-4 text-sm text-red-700 text-center mb-2">{error}</div>}
 
         <Card className="w-[500px] bg-background border-zinc-900">
@@ -136,7 +136,7 @@ export default function RegisterPage() {
             Login
           </Link>
         </div>
-      </Layout>
+      </AuthLayout>
     </>
   );
 }
