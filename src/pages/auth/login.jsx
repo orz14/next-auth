@@ -8,13 +8,14 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import auth from "@/configs/api/auth";
 import { Loader2 } from "lucide-react";
 import { setCookie } from "@/lib/cookie";
 import AuthLayout from "@/components/layouts/AuthLayout";
+import useAuth from "@/configs/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,8 +32,7 @@ export default function LoginPage() {
     validateOnMount: true,
     onSubmit: async (credentials) => {
       setLoading(true);
-      await auth
-        .login(credentials)
+      await login(credentials)
         .then((res) => {
           if (res.status === 200) {
             setCookie("token", res.data.accessToken, {
