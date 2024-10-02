@@ -1,25 +1,54 @@
-import axiosInstance from "@/lib/axios";
-import { getCookie } from "@/lib/cookie";
+import useAxiosInterceptors from "@/lib/axios";
 
-const auth = {
-  login: (credentials) => axiosInstance.post("/auth/login", credentials),
-  register: (credentials) => axiosInstance.post("/auth/register", credentials),
-  getUser: () =>
-    axiosInstance.get("/auth/me", {
-      headers: {
-        Authorization: `Bearer ${getCookie("token")}`,
-      },
-    }),
-  logout: () =>
-    axiosInstance.post(
-      "/auth/logout",
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${getCookie("token")}`,
-        },
-      }
-    ),
-};
+function useAuth() {
+  const axiosInstance = useAxiosInterceptors();
 
-export default auth;
+  const login = async (credentials) => {
+    try {
+      const response = await axiosInstance.post("/auth/login", credentials);
+      return response;
+    } catch (error) {
+      console.error("🚀 Login error:", error);
+      throw error;
+    }
+  };
+
+  const register = async (credentials) => {
+    try {
+      const response = await axiosInstance.post("/auth/register", credentials);
+      return response;
+    } catch (error) {
+      console.error("🚀 Register error:", error);
+      throw error;
+    }
+  };
+
+  const getUser = async () => {
+    try {
+      const response = await axiosInstance.get("/auth/me");
+      return response;
+    } catch (error) {
+      console.error("🚀 Get User error:", error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const response = await axiosInstance.post("/auth/logout");
+      return response;
+    } catch (error) {
+      console.error("🚀 Logout error:", error);
+      throw error;
+    }
+  };
+
+  return {
+    login,
+    register,
+    getUser,
+    logout,
+  };
+}
+
+export default useAuth;

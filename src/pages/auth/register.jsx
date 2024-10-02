@@ -8,12 +8,13 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import auth from "@/configs/api/auth";
 import { Loader2 } from "lucide-react";
 import AuthLayout from "@/components/layouts/AuthLayout";
+import useAuth from "@/configs/api/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,8 +33,7 @@ export default function RegisterPage() {
     validateOnMount: true,
     onSubmit: async (credentials) => {
       setLoading(true);
-      await auth
-        .register(credentials)
+      await register(credentials)
         .then((res) => {
           if (res.status === 201) {
             router.push("/auth/login");

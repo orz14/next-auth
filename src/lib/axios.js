@@ -1,4 +1,7 @@
 import axios from "axios";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { deleteCookie, getCookie } from "./cookie";
 
 const headers = {
   Accept: "application/json",
@@ -13,14 +16,49 @@ const axiosInstance = axios.create({
   timeout: 60 * 1000,
 });
 
-axiosInstance.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error)
-);
+function useAxiosInterceptors() {
+  const router = useRouter();
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
-);
+  useEffect(() => {
+    const requestInterceptor = axiosInstance.interceptors.request.use(
+      (config) => {
+        const token = getCookie("token") ?? null;
 
-export default axiosInstance;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    const responseInterceptor = axiosInstance.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          deleteCookie("token");
+          router.push("/auth/login");
+          return Promise.reject(new Error("Unauthorized, redirecting to login..."));
+        } else if (error.response) {
+          console.error("🚀 Error response:", error.response);
+        } else if (error.request) {
+          console.error("🚀 Error request:", error.request);
+        } else {
+          console.error("🚀 Error message:", error.message);
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axiosInstance.interceptors.request.eject(requestInterceptor);
+      axiosInstance.interceptors.response.eject(responseInterceptor);
+    };
+  }, [router]);
+
+  return axiosInstance;
+}
+
+export default useAxiosInterceptors;

@@ -3,7 +3,7 @@ import Meta from "@/components/Meta";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import auth from "@/configs/api/auth";
+import useAuth from "@/configs/api/auth";
 import { deleteCookie } from "@/lib/cookie";
 import { getUser } from "@/lib/get-user";
 import { Loader2 } from "lucide-react";
@@ -12,14 +12,14 @@ import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     setLoading(true);
 
-    await auth
-      .logout()
+    await logout()
       .then((res) => {
         if (res.status === 200) {
           deleteCookie("token");

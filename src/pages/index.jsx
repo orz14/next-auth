@@ -1,4 +1,4 @@
-import Layout from "@/components/layouts/Layout";
+import AuthLayout from "@/components/layouts/AuthLayout";
 import Meta from "@/components/Meta";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -8,7 +8,7 @@ export default function HomePage() {
     <>
       <Meta title="Next.js" />
 
-      <Layout>
+      <AuthLayout>
         <div className="space-x-2">
           <Button variant="outline" className="text-zinc-300 border-zinc-900" asChild>
             <Link href={"/auth/login"}>Login</Link>
@@ -17,7 +17,7 @@ export default function HomePage() {
             <Link href={"/auth/register"}>Register</Link>
           </Button>
         </div>
-      </Layout>
+      </AuthLayout>
     </>
   );
 }
