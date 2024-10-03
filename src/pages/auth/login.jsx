@@ -10,12 +10,14 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Loader2 } from "lucide-react";
 import { setCookie } from "@/lib/cookie";
-import AuthLayout from "@/components/layouts/AuthLayout";
 import useAuth from "@/configs/api/auth";
+import { useAuthContext } from "@/contexts/AuthContext";
+import Layout from "@/components/layouts/Layout";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { login: setAuth } = useAuthContext();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,13 +43,22 @@ export default function LoginPage() {
               sameSite: "Strict",
             });
 
+            const userData = {
+              id: res.data.data.id,
+              name: res.data.data.name,
+              email: res.data.data.email,
+              permissions: [],
+            };
+
+            setAuth(userData);
+
             router.push("/dashboard");
           }
         })
         .catch((err) => {
           console.log("err:", err);
-          if (err.status === 403) {
-            setError(err.response.data.message);
+          if (err.status === 403 || err.status === 404) {
+            setError("Invalid credentials");
             setLoading(false);
           }
         });
@@ -61,7 +72,7 @@ export default function LoginPage() {
     <>
       <Meta title="Login Page" />
 
-      <AuthLayout>
+      <Layout>
         {error && <div className="w-[500px] bg-background border border-zinc-900 rounded-lg p-4 text-sm text-red-700 text-center mb-2">{error}</div>}
 
         <Card className="w-[500px] bg-background border-zinc-900">
@@ -125,7 +136,7 @@ export default function LoginPage() {
             Register
           </Link>
         </div>
-      </AuthLayout>
+      </Layout>
     </>
   );
 }

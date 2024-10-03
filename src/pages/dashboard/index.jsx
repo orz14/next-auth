@@ -4,17 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import useAuth from "@/configs/api/auth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { deleteCookie } from "@/lib/cookie";
-import { getUser } from "@/lib/get-user";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { logout } = useAuth();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { user, logout: logoutAuth } = useAuthContext();
 
   const handleLogout = async () => {
     setLoading(true);
@@ -23,6 +24,7 @@ export default function DashboardPage() {
       .then((res) => {
         if (res.status === 200) {
           deleteCookie("token");
+          logoutAuth();
           router.push("/auth/login");
         }
       })
@@ -31,13 +33,6 @@ export default function DashboardPage() {
         setLoading(false);
       });
   };
-
-  useEffect(() => {
-    const data = getUser();
-    if (data) {
-      setUser(data);
-    }
-  }, []);
 
   return (
     <>
