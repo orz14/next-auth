@@ -18,9 +18,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const { login: setAuth } = useAuthContext();
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const callbackUrl = router.query?.callbackUrl ?? "/dashboard";
 
   const formik = useFormik({
     initialValues: {
@@ -43,16 +43,14 @@ export default function LoginPage() {
               sameSite: "Strict",
             });
 
-            const userData = {
+            setAuth({
               id: res.data.data.id,
               name: res.data.data.name,
               email: res.data.data.email,
               permissions: [],
-            };
+            });
 
-            setAuth(userData);
-
-            router.push("/dashboard");
+            router.push(callbackUrl);
           }
         })
         .catch((err) => {

@@ -9,6 +9,7 @@ export function middleware(req) {
 
   if (isProtectedRoute && !token) {
     url.pathname = "/auth/login";
+    url.searchParams.set("callbackUrl", encodeURI(req.url));
     return NextResponse.redirect(url);
   }
 

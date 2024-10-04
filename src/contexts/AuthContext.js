@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = (userData) => {
+    setLoading(true);
     setUser(userData);
 
     const encryptedUser = encryptData(userData);
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    setLoading(true);
     setUser(null);
     localStorage.removeItem("user");
   };
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }) => {
       console.log("AuthContext executed!");
 
       const token = getCookie("token") ?? null;
+      const callbackUrl = encodeURI(router.asPath);
 
       if (token) {
         const now = new Date();
@@ -53,7 +56,10 @@ export const AuthProvider = ({ children }) => {
 
           deleteCookie("token");
           logout();
-          router.push("/auth/login");
+          router.push({
+            pathname: "/auth/login",
+            query: { callbackUrl },
+          });
         } else {
           const encryptedUser = localStorage.getItem("user") ?? null;
 
@@ -63,14 +69,12 @@ export const AuthProvider = ({ children }) => {
           } else {
             const data = decoded?.data;
 
-            const userData = {
+            login({
               id: data.id,
               name: data.name,
               email: data.email,
               permissions: [],
-            };
-
-            login(userData);
+            });
           }
 
           setLoading(false);
@@ -84,7 +88,10 @@ export const AuthProvider = ({ children }) => {
           });
 
           logout();
-          router.push("/auth/login");
+          router.push({
+            pathname: "/auth/login",
+            query: { callbackUrl },
+          });
         }
 
         setLoading(false);
@@ -99,16 +106,16 @@ export const AuthProvider = ({ children }) => {
   }, [router, toast]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <>
       {loading ? (
-        <div className="flex items-center justify-center w-full min-h-screen">
+        <section className="flex items-center justify-center w-full min-h-screen">
           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           Please wait
-        </div>
+        </section>
       ) : (
-        <>{children}</>
+        <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>
       )}
-    </AuthContext.Provider>
+    </>
   );
 };
 

@@ -59,7 +59,7 @@ function useAxiosInterceptors() {
       axiosInstance.interceptors.request.eject(requestInterceptor);
       axiosInstance.interceptors.response.eject(responseInterceptor);
     };
-  }, [router]);
+  }, [router, logout]);
 
   return axiosInstance;
 }

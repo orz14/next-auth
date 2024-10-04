@@ -7,7 +7,6 @@ import useAuth from "@/configs/api/auth";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { deleteCookie } from "@/lib/cookie";
 import { Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -38,45 +37,38 @@ export default function DashboardPage() {
     <>
       <Meta title="Dashboard Page" />
 
-      {!user ? (
-        <div className="flex items-center justify-center w-full min-h-screen">
-          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Please wait
-        </div>
-      ) : (
-        <Layout>
-          <Card className="w-[500px] bg-background border-zinc-900">
-            <CardContent>
-              <Table className="mt-6 text-zinc-300">
-                <TableBody>
-                  <TableRow className="border-none hover:bg-zinc-900">
-                    <TableCell className="font-medium">Name</TableCell>
-                    <TableCell>&nbsp;:&nbsp;</TableCell>
-                    <TableCell>{user?.name}</TableCell>
-                  </TableRow>
-                  <TableRow className="border-none hover:bg-zinc-900">
-                    <TableCell className="font-medium">Email</TableCell>
-                    <TableCell>&nbsp;:&nbsp;</TableCell>
-                    <TableCell>{user?.email}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-            <CardFooter>
-              <Button type="button" onClick={handleLogout} variant="outline" className="w-full text-zinc-300 border-zinc-900" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Please wait
-                  </>
-                ) : (
-                  "Logout"
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        </Layout>
-      )}
+      <Layout>
+        <Card className="w-[500px] bg-background border-zinc-900">
+          <CardContent>
+            <Table className="mt-6 text-zinc-300">
+              <TableBody>
+                <TableRow className="border-none hover:bg-zinc-900">
+                  <TableCell className="font-medium">Name</TableCell>
+                  <TableCell>&nbsp;:&nbsp;</TableCell>
+                  <TableCell>{user?.name}</TableCell>
+                </TableRow>
+                <TableRow className="border-none hover:bg-zinc-900">
+                  <TableCell className="font-medium">Email</TableCell>
+                  <TableCell>&nbsp;:&nbsp;</TableCell>
+                  <TableCell>{user?.email}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+          <CardFooter>
+            <Button type="button" onClick={handleLogout} variant="outline" className="w-full text-zinc-300 border-zinc-900" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Please wait
+                </>
+              ) : (
+                "Logout"
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </Layout>
     </>
   );
 }
