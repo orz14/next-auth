@@ -2,6 +2,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { deleteCookie, getCookie } from "./cookie";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const headers = {
   Accept: "application/json",
@@ -18,6 +19,7 @@ const axiosInstance = axios.create({
 
 function useAxiosInterceptors() {
   const router = useRouter();
+  const { logout } = useAuthContext();
 
   useEffect(() => {
     const requestInterceptor = axiosInstance.interceptors.request.use(
@@ -38,6 +40,7 @@ function useAxiosInterceptors() {
       (error) => {
         if (error.response && error.response.status === 401) {
           deleteCookie("token");
+          logout();
           router.push("/auth/login");
           return Promise.reject(new Error("Unauthorized, redirecting to login..."));
         } else if (error.response) {
@@ -56,7 +59,7 @@ function useAxiosInterceptors() {
       axiosInstance.interceptors.request.eject(requestInterceptor);
       axiosInstance.interceptors.response.eject(responseInterceptor);
     };
-  }, [router]);
+  }, [router, logout]);
 
   return axiosInstance;
 }

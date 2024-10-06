@@ -9,8 +9,8 @@ import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Loader2 } from "lucide-react";
-import AuthLayout from "@/components/layouts/AuthLayout";
 import useAuth from "@/configs/api/auth";
+import Layout from "@/components/layouts/Layout";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function RegisterPage() {
     <>
       <Meta title="Register Page" />
 
-      <AuthLayout>
+      <Layout>
         {error && <div className="w-[500px] bg-background border border-zinc-900 rounded-lg p-4 text-sm text-red-700 text-center mb-2">{error}</div>}
 
         <Card className="w-[500px] bg-background border-zinc-900">
@@ -136,7 +136,7 @@ export default function RegisterPage() {
             Login
           </Link>
         </div>
-      </AuthLayout>
+      </Layout>
     </>
   );
 }
