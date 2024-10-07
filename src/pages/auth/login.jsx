@@ -71,9 +71,9 @@ export default function LoginPage() {
       <Meta title="Login Page" />
 
       <Layout>
-        {error && <div className="w-[500px] bg-background border border-zinc-900 rounded-lg p-4 text-sm text-red-700 text-center mb-2">{error}</div>}
+        {error && <div className="w-full max-w-[500px] bg-background border border-zinc-900 rounded-lg p-4 text-sm text-red-700 text-center mb-2">{error}</div>}
 
-        <Card className="w-[500px] bg-background border-zinc-900">
+        <Card className="w-full max-w-[500px] bg-background border-zinc-900">
           <CardHeader>
             <CardTitle className="text-zinc-300">Login</CardTitle>
             <CardDescription>Login to your account.</CardDescription>

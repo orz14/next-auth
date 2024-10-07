@@ -38,7 +38,7 @@ export default function DashboardPage() {
       <Meta title="Dashboard Page" />
 
       <Layout>
-        <Card className="w-[500px] bg-background border-zinc-900">
+        <Card className="w-full max-w-[500px] bg-background border-zinc-900">
           <CardContent>
             <Table className="mt-6 text-zinc-300">
               <TableBody>
