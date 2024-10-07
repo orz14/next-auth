@@ -106,16 +106,17 @@ export const AuthProvider = ({ children }) => {
   }, [router, toast]);
 
   return (
-    <>
-      {loading ? (
-        <section className="flex items-center justify-center w-full min-h-screen">
-          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          Please wait
-        </section>
-      ) : (
-        <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {loading && (
+        <div style={{ position: "fixed", top: 0, bottom: 0, left: 0, right: 0, width: "100%", minHeight: "100vh", backgroundColor: "#0a0a0a", zIndex: 9999 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", minHeight: "100vh" }}>
+            <Loader2 className="animate-spin" style={{ width: "1rem", height: "1rem", marginRight: "0.5rem" }} />
+            <span>Please wait</span>
+          </div>
+        </div>
       )}
-    </>
+      <div style={{ zIndex: 10 }}>{children}</div>
+    </AuthContext.Provider>
   );
 };
 
