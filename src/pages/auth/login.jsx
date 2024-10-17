@@ -9,10 +9,10 @@ import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Loader2 } from "lucide-react";
-import { setCookie } from "@/lib/cookie";
 import useAuth from "@/configs/api/auth";
 import { useAuthContext } from "@/contexts/AuthContext";
 import Layout from "@/components/layouts/Layout";
+import useAxiosInterceptors from "@/lib/axios";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const callbackUrl = router.query?.callbackUrl ?? "/dashboard";
+  const axiosInstance = useAxiosInterceptors();
 
   const formik = useFormik({
     initialValues: {
@@ -34,37 +35,38 @@ export default function LoginPage() {
     validateOnMount: true,
     onSubmit: async (credentials) => {
       setLoading(true);
-      await login(credentials)
-        .then((res) => {
-          if (res.status === 200) {
-            setCookie("token", res.data.accessToken, {
-              path: "/",
-              secure: true,
-              sameSite: "Strict",
-            });
+      try {
+        const res = await login(credentials);
 
-            setAuth({
-              id: res.data.data.id,
-              name: res.data.data.name,
-              email: res.data.data.email,
-              permissions: [],
-            });
+        if (res.status === 200) {
+          const token = res.data.accessToken;
+          await axiosInstance.post("/api/set-login-cookie", { token });
 
-            router.push(callbackUrl);
-          }
-        })
-        .catch((err) => {
-          console.log("err:", err);
-          if (err.status === 403 || err.status === 404) {
-            setError("Invalid credentials");
-            setLoading(false);
-          }
-        });
+          setAuth({
+            id: res.data.data.id,
+            name: res.data.data.name,
+            email: res.data.data.email,
+            permissions: [],
+          });
+
+          router.push(callbackUrl);
+        }
+      } catch (err) {
+        console.log("🚀 ~ onSubmit: ~ err:", err);
+
+        if (err.status === 403 || err.status === 404) {
+          setError("Invalid credentials");
+        } else if (err.status === 400) {
+          console.error("🚀 ~ Login error:", err.response.data);
+        }
+
+        setLoading(false);
+      }
     },
   });
 
   const { values, handleSubmit, handleChange, handleBlur, touched, errors } = formik;
-  console.log("errors:", errors);
+  console.log("🚀 ~ LoginPage ~ errors:", errors);
 
   return (
     <>

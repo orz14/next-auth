@@ -1,7 +1,6 @@
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { deleteCookie, getCookie } from "./cookie";
 import { useAuthContext } from "@/contexts/AuthContext";
 
 const headers = {
@@ -12,7 +11,6 @@ const headers = {
 };
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers,
   timeout: 60 * 1000,
 });
@@ -20,12 +18,24 @@ const axiosInstance = axios.create({
 function useAxiosInterceptors() {
   const router = useRouter();
   const { logout } = useAuthContext();
+  const [token, setToken] = useState(null);
+
+  async function getToken() {
+    try {
+      const res = await axiosInstance.get("/api/get-token");
+      setToken(res.data.token);
+    } catch (err) {
+      if (err.status === 400) {
+        setToken(null);
+      }
+    }
+  }
 
   useEffect(() => {
+    getToken();
+
     const requestInterceptor = axiosInstance.interceptors.request.use(
       (config) => {
-        const token = getCookie("token") ?? null;
-
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -39,7 +49,6 @@ function useAxiosInterceptors() {
       (response) => response,
       (error) => {
         if (error.response && error.response.status === 401) {
-          deleteCookie("token");
           logout();
           router.push("/auth/login");
           return Promise.reject(new Error("Unauthorized, redirecting to login..."));
@@ -59,7 +68,7 @@ function useAxiosInterceptors() {
       axiosInstance.interceptors.request.eject(requestInterceptor);
       axiosInstance.interceptors.response.eject(responseInterceptor);
     };
-  }, [router, logout]);
+  }, [router, logout, token]);
 
   return axiosInstance;
 }
