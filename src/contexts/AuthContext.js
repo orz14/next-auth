@@ -1,5 +1,5 @@
+import axios from "axios";
 import jwt from "jsonwebtoken";
-import { deleteCookie, getCookie } from "@/lib/cookie";
 import { decryptData, encryptData } from "@/lib/crypto";
 import { createContext, useContext, useState, useEffect } from "react";
 import { differenceInMinutes, isBefore } from "date-fns";
@@ -32,13 +32,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    function checkTokenExpiration() {
+    async function checkTokenExpiration() {
       console.log("AuthContext executed!");
-
-      const token = getCookie("token") ?? null;
       const callbackUrl = encodeURI(router.asPath);
 
-      if (token) {
+      try {
+        const res = await axios.get("/api/get-token");
+        const token = res.data.token;
+
         const now = new Date();
         const decoded = jwt.decode(token);
 
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }) => {
             description: "Your session has expired. Please log in again.",
           });
 
-          deleteCookie("token");
+          await axios.post("/api/logout");
           logout();
           router.push({
             pathname: "/auth/login",
@@ -76,24 +77,25 @@ export const AuthProvider = ({ children }) => {
               permissions: [],
             });
           }
-
-          setLoading(false);
         }
-      } else {
-        const userData = localStorage.getItem("user") ?? null;
-        if (userData) {
-          toast({
-            variant: "destructive",
-            description: "Please log in again.",
-          });
+      } catch (err) {
+        if (err.status === 400) {
+          const userData = localStorage.getItem("user") ?? null;
 
-          logout();
-          router.push({
-            pathname: "/auth/login",
-            query: { callbackUrl },
-          });
+          if (userData) {
+            toast({
+              variant: "destructive",
+              description: "Please log in again.",
+            });
+
+            logout();
+            router.push({
+              pathname: "/auth/login",
+              query: { callbackUrl },
+            });
+          }
         }
-
+      } finally {
         setLoading(false);
       }
     }

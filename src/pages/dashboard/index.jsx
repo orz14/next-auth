@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import useAuth from "@/configs/api/auth";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { deleteCookie } from "@/lib/cookie";
+import useAxiosInterceptors from "@/lib/axios";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -15,22 +15,29 @@ export default function DashboardPage() {
   const { logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const { user, logout: logoutAuth } = useAuthContext();
+  const axiosInstance = useAxiosInterceptors();
 
   const handleLogout = async () => {
     setLoading(true);
 
-    await logout()
-      .then((res) => {
-        if (res.status === 200) {
-          deleteCookie("token");
-          logoutAuth();
-          router.push("/auth/login");
-        }
-      })
-      .catch((err) => {
-        console.log("🚀 ~ awaitauth.logout ~ err:", err);
-        setLoading(false);
-      });
+    try {
+      const res = await logout();
+
+      if (res.status === 200) {
+        await axiosInstance.post("/api/logout");
+
+        logoutAuth();
+        router.push("/auth/login");
+      }
+    } catch (err) {
+      console.log("🚀 ~ handleLogout ~ err:", err);
+
+      if (err.status === 400) {
+        console.error("🚀 ~ Logout error:", err.response.data);
+      }
+
+      setLoading(false);
+    }
   };
 
   return (
