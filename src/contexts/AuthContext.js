@@ -32,6 +32,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    async function getIp() {
+      const ip = localStorage.getItem("userIp");
+      if (!ip) {
+        try {
+          const res = await axios.get("/api/get-ip");
+          if (res.data.ip) {
+            localStorage.setItem("userIp", res.data.ip);
+          }
+        } catch (err) {
+          console.error("🚀 Error fetching IP:", err);
+        }
+      }
+    }
+
+    getIp();
+
     async function checkTokenExpiration() {
       console.log("AuthContext executed!");
       const callbackUrl = encodeURI(router.asPath);
