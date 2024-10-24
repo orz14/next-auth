@@ -29,6 +29,8 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("userIp");
+    localStorage.removeItem("encryptedData");
   };
 
   useEffect(() => {
@@ -45,30 +47,93 @@ export const AuthProvider = ({ children }) => {
         }
       }
     }
-
     getIp();
 
     async function checkTokenExpiration() {
       console.log("AuthContext executed!");
       const callbackUrl = encodeURI(router.asPath);
 
-      try {
-        const res = await axios.get("/api/get-token");
-        const token = res.data.token;
+      const ip = localStorage.getItem("userIp");
+      if (!ip) {
+        getIp();
+      }
 
-        const now = new Date();
-        const decoded = jwt.decode(token);
+      const authData = localStorage.getItem("encryptedData");
+      if (!authData) {
+        try {
+          const res = await axios.get("/api/get-token");
+          const token = res.data.token;
 
-        const expTimestamp = decoded?.exp;
-        const date = new Date(expTimestamp * 1000);
+          const now = new Date();
+          const decoded = jwt.decode(token);
 
-        const isExpired = isBefore(date, now);
-        const minutesUntilExpiration = differenceInMinutes(date, now);
+          const expTimestamp = decoded?.exp;
+          const date = new Date(expTimestamp * 1000);
 
-        if (isExpired || minutesUntilExpiration <= 5) {
+          const isExpired = isBefore(date, now);
+          const minutesUntilExpiration = differenceInMinutes(date, now);
+
+          if (isExpired || minutesUntilExpiration <= 5) {
+            toast({
+              variant: "destructive",
+              description: "Your session has expired. Please log in again.",
+            });
+
+            await axios.post("/api/logout");
+            logout();
+            router.push({
+              pathname: "/auth/login",
+              query: { callbackUrl },
+            });
+          } else {
+            const encryptedUser = localStorage.getItem("user") ?? null;
+
+            if (encryptedUser) {
+              const decryptedUser = decryptData(encryptedUser);
+              setUser(decryptedUser);
+            } else {
+              const data = decoded?.data;
+
+              login({
+                id: data.id,
+                name: data.name,
+                email: data.email,
+                permissions: [],
+              });
+            }
+
+            const encryptedData = encryptData({ token, ip });
+            if (encryptedData) {
+              localStorage.setItem("encryptedData", encryptedData);
+            }
+          }
+        } catch (err) {
+          if (err.status === 400) {
+            const userData = localStorage.getItem("user") ?? null;
+
+            if (userData) {
+              toast({
+                variant: "destructive",
+                description: "Please log in again.",
+              });
+
+              logout();
+              router.push({
+                pathname: "/auth/login",
+                query: { callbackUrl },
+              });
+            }
+          }
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        const decryptedData = decryptData(authData);
+
+        if (decryptedData.ip != ip) {
           toast({
             variant: "destructive",
-            description: "Your session has expired. Please log in again.",
+            description: "Your ip address has changed. Please log in again.",
           });
 
           await axios.post("/api/logout");
@@ -78,42 +143,113 @@ export const AuthProvider = ({ children }) => {
             query: { callbackUrl },
           });
         } else {
-          const encryptedUser = localStorage.getItem("user") ?? null;
+          const token = decryptedData.token;
 
-          if (encryptedUser) {
-            const decryptedUser = decryptData(encryptedUser);
-            setUser(decryptedUser);
-          } else {
-            const data = decoded?.data;
+          const now = new Date();
+          const decoded = jwt.decode(token);
 
-            login({
-              id: data.id,
-              name: data.name,
-              email: data.email,
-              permissions: [],
-            });
-          }
-        }
-      } catch (err) {
-        if (err.status === 400) {
-          const userData = localStorage.getItem("user") ?? null;
+          const expTimestamp = decoded?.exp;
+          const date = new Date(expTimestamp * 1000);
 
-          if (userData) {
+          const isExpired = isBefore(date, now);
+          const minutesUntilExpiration = differenceInMinutes(date, now);
+
+          if (isExpired || minutesUntilExpiration <= 5) {
             toast({
               variant: "destructive",
-              description: "Please log in again.",
+              description: "Your session has expired. Please log in again.",
             });
 
+            await axios.post("/api/logout");
             logout();
             router.push({
               pathname: "/auth/login",
               query: { callbackUrl },
             });
+          } else {
+            const encryptedUser = localStorage.getItem("user") ?? null;
+
+            if (encryptedUser) {
+              const decryptedUser = decryptData(encryptedUser);
+              setUser(decryptedUser);
+            } else {
+              const data = decoded?.data;
+
+              login({
+                id: data.id,
+                name: data.name,
+                email: data.email,
+                permissions: [],
+              });
+            }
           }
         }
-      } finally {
+
         setLoading(false);
       }
+
+      // try {
+      //   const res = await axios.get("/api/get-token");
+      //   const token = res.data.token;
+
+      //   const now = new Date();
+      //   const decoded = jwt.decode(token);
+
+      //   const expTimestamp = decoded?.exp;
+      //   const date = new Date(expTimestamp * 1000);
+
+      //   const isExpired = isBefore(date, now);
+      //   const minutesUntilExpiration = differenceInMinutes(date, now);
+
+      //   if (isExpired || minutesUntilExpiration <= 5) {
+      //     toast({
+      //       variant: "destructive",
+      //       description: "Your session has expired. Please log in again.",
+      //     });
+
+      //     await axios.post("/api/logout");
+      //     logout();
+      //     router.push({
+      //       pathname: "/auth/login",
+      //       query: { callbackUrl },
+      //     });
+      //   } else {
+      //     const encryptedUser = localStorage.getItem("user") ?? null;
+
+      //     if (encryptedUser) {
+      //       const decryptedUser = decryptData(encryptedUser);
+      //       setUser(decryptedUser);
+      //     } else {
+      //       const data = decoded?.data;
+
+      //       login({
+      //         id: data.id,
+      //         name: data.name,
+      //         email: data.email,
+      //         permissions: [],
+      //       });
+      //     }
+      //   }
+      // } catch (err) {
+      //   if (err.status === 400) {
+      //     const userData = localStorage.getItem("user") ?? null;
+
+      //     if (userData) {
+      //       toast({
+      //         variant: "destructive",
+      //         description: "Please log in again.",
+      //       });
+
+      //       logout();
+      //       router.push({
+      //         pathname: "/auth/login",
+      //         query: { callbackUrl },
+      //       });
+      //     }
+      //   }
+      // } finally {
+      //   setLoading(false);
+      // }
     }
 
     checkTokenExpiration();
