@@ -13,6 +13,7 @@ import useAuth from "@/configs/api/auth";
 import { useAuthContext } from "@/contexts/AuthContext";
 import Layout from "@/components/layouts/Layout";
 import useAxiosInterceptors from "@/lib/axios";
+import { encryptData } from "@/lib/crypto";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,6 +36,8 @@ export default function LoginPage() {
     validateOnMount: true,
     onSubmit: async (credentials) => {
       setLoading(true);
+      const ip = localStorage.getItem("userIp");
+
       try {
         const res = await login(credentials);
 
@@ -48,6 +51,11 @@ export default function LoginPage() {
             email: res.data.data.email,
             permissions: [],
           });
+
+          const encryptedData = encryptData({ token, ip });
+          if (encryptedData) {
+            localStorage.setItem("encryptedData", encryptedData);
+          }
 
           router.push(callbackUrl);
         }
